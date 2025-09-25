@@ -1,0 +1,24 @@
+service: class-search-demo-api
+frameworkVersion: "3"
+useDotenv: true
+
+plugins:
+  - serverless-esbuild
+  - "serverless-offline"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  environment: ${file(./config.js):env}
+  httpApi:
+    cors: true
+
+functions:
+  api:
+    handler: src/index.handler
+    events:
+      - httpApi: "*"
+
+package:
+  include:
+    - data/*.csv
