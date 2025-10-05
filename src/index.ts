@@ -1,5 +1,6 @@
 import serverless from "serverless-http";
 import express from "express";
+import session from "express-session";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -15,10 +16,28 @@ import connectToDatabase from "./db";
 
 const app = express();
 
-app.get(`/${process.env.SEARCH_OPTIONS_URL}`, async (_req, res, _next) => {
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+    },
+  }),
+);
+
+declare module "express-session" {
+  interface SessionData {
+    user?: { role: string };
+  }
+}
+
+app.get(`/${process.env.SEARCH_OPTIONS_URL}`, async (req, res, _next) => {
   const subjects = await Subject.find();
   const crse_attrs = await CourseAttrModel.find().populate("values");
   const instruct_modes = await InstructionMode.find();
+  req.session!.user = { role: "demo" };
   return res.status(200).json({
     subjects: subjects,
     crse_attrs: crse_attrs,
